@@ -6,8 +6,11 @@ import (
 	"github.com/cebilon123/nbp-go/internal/logg"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 )
+
+const jsonContentType = "application/json"
 
 // checker is used to check
 // state of NBP currencies and
@@ -22,8 +25,7 @@ type checker struct {
 	cancel context.CancelFunc
 }
 
-func NewChecker(logger logg.Logger, checksAmount int, secondsAmount int, host string) *checker {
-	ctx, cancel := context.WithCancel(context.Background())
+func NewChecker(logger logg.Logger, checksAmount int, secondsAmount int, host string, ctx context.Context, cancel context.CancelFunc) *checker {
 	return &checker{
 		logger:        logger,
 		checksAmount:  checksAmount,
@@ -32,6 +34,9 @@ func NewChecker(logger logg.Logger, checksAmount int, secondsAmount int, host st
 		ctx:           ctx,
 		cancel:        cancel,
 	}
+}
+
+type nbpResponse struct {
 }
 
 // Start starts checker which will
@@ -62,8 +67,7 @@ func (c *checker) Start() {
 					logData := &logg.LogData{
 						Time:               start,
 						Duration:           time.Since(start),
-						Currency:           "ERROR",
-						Mid:                0,
+						Message:            "ERROR",
 						ResponseStatusCode: res.StatusCode,
 						IsJson:             false,
 						IsJsonSyntaxValid:  false,
@@ -74,15 +78,17 @@ func (c *checker) Start() {
 					}
 				}
 
+				contentType := res.Header.Get("Content-type")
+
 				logData := &logg.LogData{
 					Time:               start,
 					Duration:           time.Since(start),
-					Currency:           "EUR",
-					Mid:                0,
+					Message:            "",
 					ResponseStatusCode: res.StatusCode,
-					IsJson:             false,
+					IsJson:             strings.Contains(contentType, jsonContentType),
 					IsJsonSyntaxValid:  false,
 				}
+
 				if err := c.logger.LogStatus(logData); err != nil {
 					log.Println(err)
 				}

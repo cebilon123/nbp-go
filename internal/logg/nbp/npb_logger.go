@@ -3,7 +3,6 @@ package nbp
 import (
 	"errors"
 	"github.com/cebilon123/nbp-go/internal/logg"
-	"github.com/cebilon123/nbp-go/internal/logg/console"
 )
 
 // LoggerAggregator implements Logger interface
@@ -15,10 +14,6 @@ type LoggerAggregator struct {
 // into given logging targets
 func NewLoggerAggregator(registeredLoggers []logg.Logger) logg.Logger {
 	return LoggerAggregator{registeredLoggers: registeredLoggers}
-}
-
-func NewDefaultLoggerAggregator() logg.Logger {
-	return LoggerAggregator{registeredLoggers: []logg.Logger{console.NewConsoleLogger()}}
 }
 
 func (n LoggerAggregator) LogStatus(data *logg.LogData) error {
