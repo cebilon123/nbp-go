@@ -2,8 +2,10 @@ package checker
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/cebilon123/nbp-go/internal/limiter"
 	"github.com/cebilon123/nbp-go/internal/logg"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"strings"
@@ -37,6 +39,11 @@ func NewChecker(logger logg.Logger, checksAmount int, secondsAmount int, host st
 }
 
 type nbpResponse struct {
+	Rates []struct {
+		No            string  `json:"no"`
+		EffectiveDate string  `json:"effectiveDate"`
+		Mid           float32 `json:"mid"`
+	} `json:"rates"`
 }
 
 // Start starts checker which will
@@ -80,13 +87,22 @@ func (c *checker) Start() {
 
 				contentType := res.Header.Get("Content-type")
 
+				var nbpRes nbpResponse
+				resBody, err := ioutil.ReadAll(res.Body)
+				isJsonSyntaxValid := false
+				err1 := json.Unmarshal(resBody, &nbpRes)
+
+				if err == nil && err1 == nil {
+					isJsonSyntaxValid = true
+				}
+
 				logData := &logg.LogData{
 					Time:               start,
 					Duration:           time.Since(start),
 					Message:            "",
 					ResponseStatusCode: res.StatusCode,
 					IsJson:             strings.Contains(contentType, jsonContentType),
-					IsJsonSyntaxValid:  false,
+					IsJsonSyntaxValid:  isJsonSyntaxValid,
 				}
 
 				if err := c.logger.LogStatus(logData); err != nil {

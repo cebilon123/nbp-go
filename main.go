@@ -3,20 +3,31 @@ package main
 import (
 	"context"
 	"github.com/cebilon123/nbp-go/internal/logg"
+	"github.com/cebilon123/nbp-go/internal/logg/concurrent_logger"
 	"github.com/cebilon123/nbp-go/internal/logg/console"
-	"github.com/cebilon123/nbp-go/internal/logg/file"
 	"github.com/cebilon123/nbp-go/internal/logg/nbp"
 	"github.com/cebilon123/nbp-go/pkg/checker"
 	"github.com/mattn/go-tty"
 	"log"
+	"os"
 )
 
 const host = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/100/?format=json"
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	l := nbp.NewLoggerAggregator([]logg.Logger{console.NewConsoleLogger(), file.NewFileLogger(ctx)})
-	ch := checker.NewChecker(l, 10, 5, host, ctx, cancel)
+	f, err := os.OpenFile("./log.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	if err != nil {
+		panic(err)
+	}
+
+	logAg := nbp.NewLoggerAggregator([]logg.Logger{
+		concurrent_logger.New(ctx, console.NewConsoleWriter()),
+		concurrent_logger.New(ctx, f)},
+	)
+
+	ch := checker.NewChecker(logAg, 10, 5, host, ctx, cancel)
+	
 	t, err := tty.Open()
 	if err != nil {
 		log.Fatal(err)

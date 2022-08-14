@@ -2,19 +2,27 @@ package console
 
 import (
 	"github.com/cebilon123/nbp-go/internal/logg"
-	"github.com/cebilon123/nbp-go/internal/logg/log_format"
 	"log"
 )
 
-// consoleLogger logs to console and implements Logger interface
-type consoleLogger struct {
+// consoleWriter logs to console and implements logg.ConcurrentWriter interface
+type consoleWriter struct {
 }
 
-func NewConsoleLogger() logg.Logger {
-	return &consoleLogger{}
+func (c consoleWriter) WriteString(s string) (n int, err error) {
+	if len(s) == 0 {
+		return 0, nil
+	}
+	log.Print(s)
+	return len(s), nil
 }
 
-func (c consoleLogger) LogStatus(data *logg.LogData) error {
-	log.Println(log_format.GetString(data))
+// Close it is not used here, but must be implemented
+// because of logg.ConcurrentWriter interface
+func (c consoleWriter) Close() error {
 	return nil
+}
+
+func NewConsoleWriter() logg.ConcurrentWriter {
+	return consoleWriter{}
 }

@@ -1,6 +1,7 @@
 package logg
 
 import (
+	"io"
 	"time"
 )
 
@@ -8,6 +9,13 @@ import (
 type Logger interface {
 	// LogStatus logs given data as param
 	LogStatus(data *LogData) error
+}
+
+// ConcurrentWriter embeds io.StringWriter
+// and io.Closer interfaces
+type ConcurrentWriter interface {
+	io.StringWriter
+	io.Closer
 }
 
 // LogData represents data that should
