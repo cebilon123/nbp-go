@@ -3,6 +3,7 @@ package checker
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/cebilon123/nbp-go/internal/limiter"
 	"github.com/cebilon123/nbp-go/internal/logg"
 	"io/ioutil"
@@ -62,6 +63,7 @@ func (c *checker) Start() {
 	go func(ctx context.Context) {
 		for {
 			l.Wait()
+
 			select {
 			case <-ctx.Done():
 				return
@@ -96,10 +98,12 @@ func (c *checker) Start() {
 					isJsonSyntaxValid = true
 				}
 
+				dates := getDatesWithoutPricesInRange(nbpRes)
+
 				logData := &logg.LogData{
 					Time:               start,
 					Duration:           time.Since(start),
-					Message:            "",
+					Message:            fmt.Sprintln(dates),
 					ResponseStatusCode: res.StatusCode,
 					IsJson:             strings.Contains(contentType, jsonContentType),
 					IsJsonSyntaxValid:  isJsonSyntaxValid,
@@ -123,4 +127,21 @@ func (c *checker) Close() {
 // Wait waits for checker to be closed
 func (c *checker) Wait() {
 	<-c.ctx.Done()
+}
+
+// getDatesWithoutPricesInRange checks if prices are between
+// 4.5 and 4.7 PLN. If the prices aren't it will
+// return array of dates when those weren't in
+// range.
+func getDatesWithoutPricesInRange(r nbpResponse) []string {
+	var ret []string
+
+	for _, rate := range r.Rates {
+		if rate.Mid < 4.5 || rate.Mid > 4.7 {
+			s := rate.EffectiveDate + " "
+			ret = append(ret, s)
+		}
+	}
+
+	return ret
 }
