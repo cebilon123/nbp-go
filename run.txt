@@ -1,0 +1,30 @@
+In this task, there weren't any information about using flags or ENV variables, so all variables are hard coded
+into the code.
+
+one log line contains all information about isJson etc. and contains the dates from the additional task.
+
+How to run?
+
+    Install GO in the version 1.18 (go.mod)
+    Put the repo into valid directory or change GO ENV VARIABLES accordingly.
+    Run go run main.go in the root directory of repo.
+
+Second running path (for those, that are not having GO installed), in bin directory, there is an .exe to run the
+app.
+
+    On windows:
+
+        Just run it. (winbuild)
+
+        log.txt will be in the same directory
+
+    On MAC: (macbuild)
+
+        open bin directory in terminal and run:
+
+        chmod +x ./macbuild (to ensure this is an executable)
+
+        and then in directory open it in the terminal.
+
+        the log.txt should be then in yours user directory.  (i.e. if your acc name is: jhon it will be jhon/log.txt)
+
