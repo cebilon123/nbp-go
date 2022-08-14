@@ -12,11 +12,16 @@ import (
 	"os"
 )
 
-const host = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/100/?format=json"
+const (
+	host          = "http://api.nbp.pl/api/exchangerates/rates/a/eur/last/100/?format=json"
+	fileName      = "./log.txt"
+	checksAmount  = 10
+	secondsAmount = 5
+)
 
 func main() {
 	ctx, cancel := context.WithCancel(context.Background())
-	f, err := os.OpenFile("./log.txt", os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+	f, err := os.OpenFile(fileName, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -26,8 +31,8 @@ func main() {
 		concurrent_logger.New(ctx, f)},
 	)
 
-	ch := checker.NewChecker(logAg, 10, 5, host, ctx, cancel)
-	
+	ch := checker.NewChecker(logAg, checksAmount, secondsAmount, host, ctx, cancel)
+
 	t, err := tty.Open()
 	if err != nil {
 		log.Fatal(err)
